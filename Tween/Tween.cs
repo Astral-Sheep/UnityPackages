@@ -12,8 +12,8 @@ namespace Com.Surbon.UnityPackage.Tweens
 	[Icon("Assets/Tween/tween_icon.png"), AddComponentMenu("Miscellaneous/Tween")]
 	public class Tween : MonoBehaviour
 	{
-		internal const int TRANSITION_MAX = 11;
-		internal const int EASE_MAX = 4;
+		public const int TRANSITION_MAX = 11;
+		public const int EASE_MAX = 4;
 
 		#region TWEENERS
 
@@ -60,6 +60,12 @@ namespace Com.Surbon.UnityPackage.Tweens
 					tween.RemoveTweener(this);
 				}
 			}
+
+			public override void Kill()
+			{
+				base.Kill();
+				callback = null;
+			}
 		}
 
 		protected abstract class InterpolationTweener : Tweener
@@ -67,7 +73,7 @@ namespace Com.Surbon.UnityPackage.Tweens
 			protected dynamic from;
 			protected dynamic to;
 			protected TransitionType transitionType = TransitionType.Linear;
-			protected EaseType easeType = EaseType.EaseIn;
+			protected EaseType easeType = EaseType.In;
 
 			protected Func<float, float, float, float> Interpolate;
 			protected Action RunInternal;
@@ -146,6 +152,12 @@ namespace Com.Surbon.UnityPackage.Tweens
 						tween.RemoveTweener(this);
 					}
 				}
+			}
+
+			public override void Kill()
+			{
+				base.Kill();
+				method = null;
 			}
 
 			#region INTERNAL_RUNNERS
@@ -512,26 +524,26 @@ namespace Com.Surbon.UnityPackage.Tweens
 			/// <summary>
 			/// The default ease. It starts slowly and speeds up.
 			/// </summary>
-			EaseIn = 0,
+			In = 0,
 			/// <summary>
-			/// The opposite of <see cref="EaseIn"/>. It starts quickly and slows down.
+			/// The opposite of <see cref="In"/>. It starts quickly and slows down.
 			/// </summary>
-			EaseOut = 1,
+			Out = 1,
 			/// <summary>
 			/// An ease that starts slowly, speeds up and slows down at the end.
 			/// </summary>
-			EaseInOut = 2,
+			InOut = 2,
 			/// <summary>
 			/// An ease that starts quickly, slows down in the middle and speeds up at the end.
 			/// </summary>
-			EaseOutIn = 3,
+			OutIn = 3,
 		}
 
 		#endregion // ENUMS
 
-		protected List<Tweener> tweeners = new List<Tweener>();
+		[SerializeField] protected float speedScale = 1f;
 		protected float totalElapsedTime = 0f;
-		protected float speedScale = 1f;
+		protected List<Tweener> tweeners = new List<Tweener>();
 
 		protected virtual void Awake() { enabled = false; }
 
@@ -546,6 +558,20 @@ namespace Com.Surbon.UnityPackage.Tweens
 					tweeners[i].Kill();
 					tweeners.RemoveAt(i);
 				}
+			}
+		}
+
+		/// <summary>
+		/// Aborts all tweening operations and stops the <see cref="Tween"/>.
+		/// </summary>
+		public void Clear()
+		{
+			enabled = false;
+
+			for (int i = tweeners.Count - 1; i >= 0; i--)
+			{
+				tweeners[i].Kill();
+				tweeners.RemoveAt(i);
 			}
 		}
 
@@ -651,7 +677,7 @@ namespace Com.Surbon.UnityPackage.Tweens
 			return this;
 		}
 
-		public Tween InterpolateMethod<T>(Action<dynamic> pMethod, IEquatable<T> pFrom, IEquatable<T> pTo, float pDuration, TransitionType pTransitionType = TransitionType.Linear, EaseType pEaseType = EaseType.EaseIn, float pDelay = 0f)
+		public Tween InterpolateMethod<T>(Action<dynamic> pMethod, IEquatable<T> pFrom, IEquatable<T> pTo, float pDuration, TransitionType pTransitionType = TransitionType.Linear, EaseType pEaseType = EaseType.In, float pDelay = 0f)
 		{
 			if (pDuration < 0)
 			{
@@ -675,7 +701,7 @@ namespace Com.Surbon.UnityPackage.Tweens
 			return this;
 		}
 
-		public Tween InterpolateProperty<T>(SObject pTarget, string pProperty, IEquatable<T> pFrom, IEquatable<T> pTo, float pDuration, TransitionType pTransitionType = TransitionType.Linear, EaseType pEaseType = EaseType.EaseIn, float pDelay = 0f)
+		public Tween InterpolateProperty<T>(SObject pTarget, string pProperty, IEquatable<T> pFrom, IEquatable<T> pTo, float pDuration, TransitionType pTransitionType = TransitionType.Linear, EaseType pEaseType = EaseType.In, float pDelay = 0f)
 		{
 			if (pDuration < 0)
 			{

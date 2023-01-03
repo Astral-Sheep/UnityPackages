@@ -4,7 +4,7 @@ using static Com.Surbon.UnityPackage.Tweens.Tween;
 
 namespace Com.Surbon.UnityPackage.Tweens
 {
-	internal class EaseEquations
+	public class EaseEquations
 	{
 		public static Func<float, float, float, float> GetEquation(TransitionType pTransitionType, EaseType pEaseType)
 		{
